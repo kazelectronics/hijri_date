@@ -296,4 +296,3 @@ class HijriDate {
     return date;
   }
 }
-
