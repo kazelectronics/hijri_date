@@ -1,17 +1,83 @@
 library hijri;
 
 import 'package:hijri/digits_converter.dart';
-
 import 'hijri_array.dart';
+import 'package:quiver/core.dart';
+
+class HijriAndGregorianDate {
+  late HijriDate hijriDate;
+  late DateTime gregorianDate;
+  late int? adjustDays;
+
+  HijriAndGregorianDate.fromGregorianDate(DateTime date, int? offset) {
+    gregorianDate = date;
+    adjustDays = offset;
+    if (adjustDays != null) {
+      date = adjustDays! < 0 ?
+        date.subtract(Duration(days: adjustDays! * -1)) :
+        date.add(Duration(days: adjustDays!));
+    }
+    hijriDate = HijriDate().getHijriDate(date);
+  }
+
+  HijriAndGregorianDate.fromHijriDate(HijriDate hDate, int? offset) {
+    hijriDate = hDate;
+    adjustDays = offset;
+    DateTime date = hijriDate.hijriToGregorian(hDate.hYear, hDate.hMonth, hDate.hDay);
+    if (adjustDays != null) {
+      date = adjustDays! > 0 ?
+        date.subtract(Duration(days: adjustDays!)) :
+        date.add(Duration(days: adjustDays! * -1));
+    }
+    gregorianDate = date;
+  }
+
+}
+
+class HijriAndGregorianDateRange {
+  /// Creates a date range for the given start and end [HijriAndGregorianDateRange].
+  HijriAndGregorianDateRange({
+    required this.start,
+    required this.end,
+  }) : assert(start != null),
+        assert(end != null),
+        assert(!start.gregorianDate.isAfter(end.gregorianDate));
+
+  /// The start of the range of dates.
+  final HijriAndGregorianDate start;
+
+  /// The end of the range of dates.
+  final HijriAndGregorianDate end;
+
+  /// Returns a [Duration] of the time between [start] and [end].
+  ///
+  /// See [DateTime.difference] for more details.
+  Duration get duration => end.gregorianDate.difference(start.gregorianDate);
+
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType)
+      return false;
+    return other is HijriAndGregorianDateRange
+        && other.start == start
+        && other.end == end;
+  }
+
+  @override
+  int get hashCode => hash2(start.hashCode, end.hashCode);
+
+  @override
+  String toString() => '$start.gregorianDate - $end.gregorianDate';
+
+}
 
 class HijriDate {
-  late int hDay;
-  late int hMonth;
-  late int hYear;
-  late int? adjustDays;
-  static late String language;
-  late int? wkDay;
-  Map<int, int>? adjustments;
+  late int hDay = 1;
+  late int hMonth = 1;
+  late int hYear = 1440;
+  static late String language = 'en';
+  late int? wkDay = null;
+  Map<int, int>? adjustments = null;
 
   static Map<String, Map<String, Map<int, String>>> _local = {
     'en': {
@@ -32,21 +98,12 @@ class HijriDate {
     this.hDay = 1,
     this.hMonth = 1,
     this.hYear = 1400,
-    this.adjustDays = null,
     language = 'en',
     this.wkDay = null,
     this.adjustments = null,
   });
 
-  HijriDate.fromDate(DateTime date,int? _adjustDays) {
-
-    if (_adjustDays != null) {
-      date = _adjustDays < 0 ?
-        date.subtract(Duration(days: _adjustDays * -1)) :
-        date.add(Duration(days: _adjustDays));
-    }
-
-    this.adjustDays = _adjustDays;
+  HijriDate.fromDate(DateTime date) {
     this.adjustments = null;
     language = 'en';
 
@@ -59,24 +116,17 @@ class HijriDate {
   }
 
   HijriDate getHijriDate (DateTime date) {
-
-    if (this.adjustDays != null) {
-      date = this.adjustDays! < 0 ?
-        date.subtract(Duration(days: this.adjustDays! * -1)) :
-        date.add(Duration(days: this.adjustDays!));
-    }
-
     return this._gregorianToHijri(date);
   }
 
   DateTime firstGregDayOfHijriMonth() {
     this.hDay = 1;
-    return this._hijriToGregorian(this.hYear,this.hMonth, this.hDay);
+    return this.hijriToGregorian(this.hYear,this.hMonth, this.hDay);
   }
 
   DateTime lastGregDayOfHijriMonth() {
     this.hDay = _getDaysInMonth();
-    return this._hijriToGregorian(this.hYear,this.hMonth, this.hDay);
+    return this.hijriToGregorian(this.hYear,this.hMonth, this.hDay);
   }
 
   int _getDaysInMonth() {
@@ -255,11 +305,11 @@ class HijriDate {
   }
 
   int _weekDay() {
-    DateTime wkDay = _hijriToGregorian(this.hYear, this.hMonth, this.hDay);
+    DateTime wkDay = hijriToGregorian(this.hYear, this.hMonth, this.hDay);
     return wkDay.weekday;
   }
 
-  DateTime _hijriToGregorian(int year, int month, int day) {
+  DateTime hijriToGregorian(int year, int month, int day) {
     int iy = year;
     int im = month;
     int id = day;
@@ -285,14 +335,6 @@ class HijriDate {
       year--;
     } // No year zero
 
-    DateTime date = DateTime(year,month,day);
-
-    if (this.adjustDays != null) {
-      date = this.adjustDays! > 0 ?
-        date.subtract(Duration(days: this.adjustDays!)) :
-        date.add(Duration(days: this.adjustDays! * -1));
-    }
-
-    return date;
+    return DateTime(year,month,day);
   }
 }
