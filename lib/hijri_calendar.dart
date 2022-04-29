@@ -69,6 +69,26 @@ class HijriDate {
     return this._gregorianToHijri(date);
   }
 
+  DateTime firstGregDayOfHijriMonth() {
+    this.hDay = 1;
+    return this._hijriToGregorian(this.hYear,this.hMonth, this.hDay);
+  }
+
+  DateTime lastGregDayOfHijriMonth() {
+    this.hDay = _getDaysInMonth();
+    return this._hijriToGregorian(this.hYear,this.hMonth, this.hDay);
+  }
+
+  int _getDaysInMonth() {
+    int i = _getNewMoonMJDNIndex(this.hYear, this.hMonth);
+    return _ummalquraDataIndex(i)! - _ummalquraDataIndex(i - 1)!;
+  }
+
+  int _getNewMoonMJDNIndex(int hy, int hm) {
+    int cYears = hy - 1, totalMonths = (cYears * 12) + 1 + (hm - 1);
+    return totalMonths - 16260;
+  }
+
   // Consider switching to the factory pattern
   factory HijriDate.setLocal(String locale) {
     language = locale;
