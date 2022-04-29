@@ -39,12 +39,19 @@ class HijriCalendar {
 
   HijriCalendar();
 
-  HijriCalendar.fromDate(DateTime date) {
+  HijriCalendar.fromDate(DateTime date, int? _adjustByDays) {
+
+    if (_adjustByDays != null) {
+      date = _adjustByDays < 0?
+              date.subtract(Duration(days: _adjustByDays*-1)):
+              date.add(Duration(days: _adjustByDays));
+    }
+
     gregorianToHijri(date.year, date.month, date.day);
   }
 
-  HijriCalendar.now() {
-    this._now();
+  HijriCalendar.now(int? _adjustByDays) {
+    this._now(_adjustByDays);
   }
 
   HijriCalendar.addMonth(int year, int month) {
@@ -57,8 +64,13 @@ class HijriCalendar {
     _local[locale] = names;
   }
 
-  String _now() {
+  String _now(int? _adjustByDays) {
     DateTime today = DateTime.now();
+    if (_adjustByDays != null) {
+      today = _adjustByDays < 0?
+                today.subtract(Duration(days: _adjustByDays*-1)):
+                today.add(Duration(days: _adjustByDays));
+    }
     return gregorianToHijri(today.year, today.month, today.day);
   }
 
