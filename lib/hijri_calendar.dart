@@ -200,6 +200,13 @@ class HijriAndGregorianDate {
 
   int differenceInDays(HijriAndGregorianDate date, bool _hijriHasPreference) {
     if (_hijriHasPreference) {
+
+      if ((hijriDate.hYear == date.hijriDate.hYear)&&
+          (hijriDate.hMonth == date.hijriDate.hMonth)&&
+          (hijriDate.hDay == date.hijriDate.hDay)) {
+        return 0;
+      }
+
       int multiplier = 1;
       HijriDate firstDate;
       HijriDate secondDate;
@@ -213,7 +220,21 @@ class HijriAndGregorianDate {
       }
       int days = 0;
 
-
+      while (firstDate.hYear != secondDate.hYear) {
+        while ((firstDate.hMonth != secondDate.hMonth)&&(firstDate.hDay != secondDate.hDay)) {
+          days++;
+          firstDate.hDay++;
+          if (firstDate.lastDayOfHijriMonth() > firstDate.hDay) {
+            firstDate.hDay = 1;
+            if (firstDate.hMonth == 12) {
+              firstDate.hMonth = 1;
+              firstDate.hYear++;
+            } else {
+              firstDate.hMonth++;
+            }
+          }
+        }
+      }
 
       return days*multiplier;
     } else {
