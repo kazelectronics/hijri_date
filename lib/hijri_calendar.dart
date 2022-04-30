@@ -109,6 +109,14 @@ class HijriAndGregorianDate {
     return gregorianDate.weekday;
   }
 
+  bool isOutsideMonth(HijriAndGregorianDate month, bool _hijriHasPreference) {
+    if (_hijriHasPreference) {
+      return hijriDate.hMonth != month.hijriDate.hMonth;
+    } else {
+      return gregorianDate.month != month.gregorianDate.month;
+    }
+  }
+
   HijriAndGregorianDate firstDayOfMonth(bool _hijriHasPreference) {
     if (_hijriHasPreference) {
       HijriDate tmp = hijriDate;
