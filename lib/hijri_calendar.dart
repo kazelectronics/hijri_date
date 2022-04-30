@@ -143,18 +143,21 @@ class HijriAndGregorianDate {
   HijriAndGregorianDate subtract(Duration days, bool _hijriHasPreference) {
     if (_hijriHasPreference) {
       HijriDate tmp = HijriDate(hDay: hijriDate.hDay,hMonth: hijriDate.hMonth,hYear: hijriDate.hYear);
-
-      if (tmp.hDay == 1) {
-        if (tmp.hMonth == 1) {
-          tmp.hYear--;
-          tmp.hMonth = 12;
-          tmp.hDay = tmp.lastDayOfHijriMonth();
+      int daysToSubtract = days.inDays;
+      while (daysToSubtract > 0) {
+        if (tmp.hDay == 1) {
+          if (tmp.hMonth == 1) {
+            tmp.hYear--;
+            tmp.hMonth = 12;
+            tmp.hDay = tmp.lastDayOfHijriMonth();
+          } else {
+            tmp.hMonth--;
+            tmp.hDay = tmp.lastDayOfHijriMonth();
+          }
         } else {
-          tmp.hMonth--;
-          tmp.hDay = tmp.lastDayOfHijriMonth();
+          tmp.hDay--;
         }
-      } else {
-        tmp.hDay--;
+        daysToSubtract--;
       }
       return HijriAndGregorianDate.fromHijriDate(tmp, adjustDays);
     } else {
@@ -165,18 +168,21 @@ class HijriAndGregorianDate {
   HijriAndGregorianDate add(Duration days, bool _hijriHasPreference) {
     if (_hijriHasPreference) {
       HijriDate tmp = HijriDate(hDay: hijriDate.hDay,hMonth: hijriDate.hMonth,hYear: hijriDate.hYear);
-
-      if (tmp.hDay == tmp.lastDayOfHijriMonth()) {
-        if (tmp.hMonth == 12) {
-          tmp.hYear++;
-          tmp.hMonth = 1;
-          tmp.hDay = 1;
+      int daysToAdd = days.inDays;
+      while (daysToAdd > 0) {
+        if (tmp.hDay == tmp.lastDayOfHijriMonth()) {
+          if (tmp.hMonth == 12) {
+            tmp.hYear++;
+            tmp.hMonth = 1;
+            tmp.hDay = 1;
+          } else {
+            tmp.hMonth++;
+            tmp.hDay = 1;
+          }
         } else {
-          tmp.hMonth++;
-          tmp.hDay = 1;
+          tmp.hDay++;
         }
-      } else {
-        tmp.hDay++;
+        daysToAdd--;
       }
       return HijriAndGregorianDate.fromHijriDate(tmp, adjustDays);
     } else {
@@ -199,7 +205,8 @@ class HijriAndGregorianDate {
   }
 
   int differenceInDays(HijriAndGregorianDate date, bool _hijriHasPreference) {
-    if (_hijriHasPreference) {
+    return gregorianDate.difference(date.gregorianDate).inDays;
+    /*if (_hijriHasPreference) {
 
       if ((hijriDate.hYear == date.hijriDate.hYear)&&
           (hijriDate.hMonth == date.hijriDate.hMonth)&&
@@ -239,6 +246,17 @@ class HijriAndGregorianDate {
       return days*multiplier;
     } else {
       return gregorianDate.difference(date.gregorianDate).inDays;
+    }*/
+  }
+
+  HijriAndGregorianDate getDateAnOffsetAway(int years, int months, int days, bool _hijriHasPreference) {
+    if (_hijriHasPreference) {
+      int numOfDays = (years*355)+(months*30)+days;
+
+      return add(Duration(days: numOfDays), _hijriHasPreference);
+    } else {
+       return HijriAndGregorianDate.fromGregorianDate(DateTime.utc(gregorianDate.year+years, gregorianDate.month+months,
+          gregorianDate.day + days),adjustDays);
     }
   }
 }
