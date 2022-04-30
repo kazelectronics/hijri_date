@@ -32,7 +32,6 @@ class HijriAndGregorianDate {
     gregorianDate = date;
   }
 
-
   bool isAfter(HijriAndGregorianDate other, bool _hijriHasPreference) {
     if (_hijriHasPreference) {
       if (hijriDate.hYear > other.hijriDate.hYear) {
@@ -141,6 +140,86 @@ class HijriAndGregorianDate {
     }
   }
 
+  HijriAndGregorianDate subtract(Duration days, bool _hijriHasPreference) {
+    if (_hijriHasPreference) {
+      HijriDate tmp = HijriDate(hDay: hijriDate.hDay,hMonth: hijriDate.hMonth,hYear: hijriDate.hYear);
+
+      if (tmp.hDay == 1) {
+        if (tmp.hMonth == 1) {
+          tmp.hYear--;
+          tmp.hMonth = 12;
+          tmp.hDay = tmp.lastDayOfHijriMonth();
+        } else {
+          tmp.hMonth--;
+          tmp.hDay = tmp.lastDayOfHijriMonth();
+        }
+      } else {
+        tmp.hDay--;
+      }
+      return HijriAndGregorianDate.fromHijriDate(tmp, adjustDays);
+    } else {
+      return HijriAndGregorianDate.fromGregorianDate(gregorianDate.subtract(days),adjustDays);
+    }
+  }
+
+  HijriAndGregorianDate add(Duration days, bool _hijriHasPreference) {
+    if (_hijriHasPreference) {
+      HijriDate tmp = HijriDate(hDay: hijriDate.hDay,hMonth: hijriDate.hMonth,hYear: hijriDate.hYear);
+
+      if (tmp.hDay == tmp.lastDayOfHijriMonth()) {
+        if (tmp.hMonth == 12) {
+          tmp.hYear++;
+          tmp.hMonth = 1;
+          tmp.hDay = 1;
+        } else {
+          tmp.hMonth++;
+          tmp.hDay = 1;
+        }
+      } else {
+        tmp.hDay++;
+      }
+      return HijriAndGregorianDate.fromHijriDate(tmp, adjustDays);
+    } else {
+      return HijriAndGregorianDate.fromGregorianDate(gregorianDate.add(days),adjustDays);
+    }
+  }
+
+  int getMonthCount(HijriAndGregorianDate last, bool _hijriHasPreference) {
+    if (_hijriHasPreference) {
+      final yearDif = last.hijriDate.hYear - hijriDate.hYear;
+      final monthDif = last.hijriDate.hMonth - hijriDate.hMonth;
+
+      return yearDif * 12 + monthDif;
+    } else {
+      final yearDif = last.gregorianDate.year - gregorianDate.year;
+      final monthDif = last.gregorianDate.month - gregorianDate.month;
+
+      return yearDif * 12 + monthDif;
+    }
+  }
+
+  int differenceInDays(HijriAndGregorianDate date, bool _hijriHasPreference) {
+    if (_hijriHasPreference) {
+      int multiplier = 1;
+      HijriDate firstDate;
+      HijriDate secondDate;
+      if (isBefore(date, _hijriHasPreference)) {
+        firstDate = hijriDate;
+        secondDate = date.hijriDate;
+      } else {
+        firstDate = date.hijriDate;
+        secondDate = hijriDate;
+        multiplier = -1;
+      }
+      int days = 0;
+
+
+
+      return days*multiplier;
+    } else {
+      return gregorianDate.difference(date.gregorianDate).inDays;
+    }
+  }
 }
 
 class HijriAndGregorianDateRange {
